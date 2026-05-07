@@ -1,6 +1,16 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -37,6 +47,9 @@ const rescuers = [
   { id: 'rescuer_2', name: 'Rescuer Two', phone: '555-0102' }
 ];
 
+// In-memory storage for rescuer locations
+const rescuerLocations = {};
+
 // ✅ POST /sos endpoint
 app.post('/sos', (req, res) => {
   const { latitude, longitude, message, battery, timestamp } = req.body;
@@ -56,6 +69,9 @@ app.post('/sos', (req, res) => {
   const id = req.body.id || `SOS-${Date.now()}`;
   const sosEntry = { id, latitude, longitude, message, battery, timestamp };
   sosData.push(sosEntry);
+
+  // Broadcast the new SOS to all connected clients
+  io.emit('newSOS', sosEntry);
 
   res.json(sosEntry);
 });
@@ -153,6 +169,37 @@ app.post('/resolve', (req, res) => {
   });
 });
 
+// ✅ POST /rescuer-location endpoint - Store rescuer's real-time location
+app.post('/rescuer-location', (req, res) => {
+  const { rescuerId, latitude, longitude, timestamp } = req.body;
+
+  // Validation
+  if (!rescuerId || typeof latitude !== 'number' || typeof longitude !== 'number') {
+    return res.status(400).json({ error: 'rescuerId, latitude, and longitude are required' });
+  }
+
+  // Store/update latest location for this rescuer
+  rescuerLocations[rescuerId] = {
+    rescuerId,
+    latitude,
+    longitude,
+    timestamp: timestamp || new Date().toISOString(),
+  };
+
+  console.log(`📍 Updated location for rescuer ${rescuerId}: (${latitude}, ${longitude})`);
+
+  res.json({
+    success: true,
+    location: rescuerLocations[rescuerId]
+  });
+});
+
+// ✅ GET /rescuer-locations endpoint - Fetch all active rescuer locations
+app.get('/rescuer-locations', (req, res) => {
+  const locations = Object.values(rescuerLocations);
+  res.json(locations);
+});
+
 // ✅ Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -161,6 +208,6 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = 5000; // or 3000 if you prefer
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

@@ -5,15 +5,13 @@ import { RealMapView } from './RealMapView';
 import { Activity, History, Filter, Map as MapIcon, List as ListIcon, LogOut, Wifi, Radio, Signal, RefreshCw, User, ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
+import { useLocationTracking } from '../hooks/useLocationTracking';
 import { useNavigate } from 'react-router';
 import appIcon from '../../imports/app_icon.png';
 import { fetchSOSData, fetchRescuers, assignAlert, resolveAlert, Rescuer } from '../services/api';
 import { transformBackendData } from '../utils/sosUtils';
 
 export function Dashboard() {
-  // Constant for current rescuer ID
-  const CURRENT_RESCUER_ID = 'rescuer_1';
-  
   const [alerts, setAlerts] = useState<SOSAlert[]>([]);
   const [rescuers, setRescuers] = useState<Rescuer[]>([]);
   const [activeTab, setActiveTab] = useState<'Active' | 'History'>('Active');
@@ -25,6 +23,12 @@ export function Dashboard() {
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Get current rescuer ID from logged-in user, fallback to rescuer_1 for testing
+  const CURRENT_RESCUER_ID = user?.id || 'rescuer_1';
+
+  // Start real-time location tracking when user is logged in
+  useLocationTracking(user?.id, !!user);
 
   const handleLogout = () => {
     logout();

@@ -1,13 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface RescuerUser {
+  id: string;
   name: string;
   phone: string;
 }
 
 interface AuthContextType {
   user: RescuerUser | null;
-  login: (name: string, phone: string) => void;
+  login: (name: string, phone: string, id?: string) => void;
   logout: () => void;
 }
 
@@ -19,8 +20,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = (name: string, phone: string) => {
-    const newUser = { name, phone };
+  const login = (name: string, phone: string, id?: string) => {
+    // Generate a consistent rescuerId if not provided
+    const rescuerId = id || `rescuer_${phone.replace(/\D/g, '').slice(-4)}`;
+    const newUser = { id: rescuerId, name, phone };
     setUser(newUser);
     localStorage.setItem('rescuer_user', JSON.stringify(newUser));
   };
