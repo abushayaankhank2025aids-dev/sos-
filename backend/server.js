@@ -171,7 +171,7 @@ app.post('/resolve', (req, res) => {
 
 // ✅ POST /rescuer-location endpoint - Store rescuer's real-time location
 app.post('/rescuer-location', (req, res) => {
-  const { rescuerId, latitude, longitude, timestamp } = req.body;
+  const { rescuerId, rescuerName, latitude, longitude, status, timestamp } = req.body;
 
   // Validation
   if (!rescuerId || typeof latitude !== 'number' || typeof longitude !== 'number') {
@@ -181,12 +181,17 @@ app.post('/rescuer-location', (req, res) => {
   // Store/update latest location for this rescuer
   rescuerLocations[rescuerId] = {
     rescuerId,
+    rescuerName: rescuerName || 'Unknown Rescuer',
     latitude,
     longitude,
+    status: status || 'ONLINE',
     timestamp: timestamp || new Date().toISOString(),
   };
 
   console.log(`📍 Updated location for rescuer ${rescuerId}: (${latitude}, ${longitude})`);
+
+  // Broadcast rescuer update to all connected clients
+  io.emit('rescuerLocationUpdate', rescuerLocations[rescuerId]);
 
   res.json({
     success: true,

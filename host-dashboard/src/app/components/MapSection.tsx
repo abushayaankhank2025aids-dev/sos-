@@ -97,12 +97,12 @@ export const MapSection: FC<MapSectionProps> = ({
         {/* RESCUERS */}
         {rescuers.map((rescuer) => (
           <Marker
-            key={rescuer.id}
-            position={[rescuer.lat, rescuer.lng]}
+            key={rescuer.rescuerId}
+            position={[rescuer.latitude, rescuer.longitude]}
           >
             <Popup>
               <div>
-                <h3>{rescuer.name}</h3>
+                <h3>{rescuer.rescuerName}</h3>
                 <p>Status: {rescuer.status}</p>
               </div>
             </Popup>

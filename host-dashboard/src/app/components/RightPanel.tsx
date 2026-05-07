@@ -107,16 +107,16 @@ export const RightPanel: FC<RightPanelProps> = ({ alerts, rescuers, selectedAler
                       </div>
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                         {rescuers.filter(r => r.status !== 'OFFLINE').map(rescuer => (
-                          <div key={rescuer.id} className="bg-slate-900 border border-slate-800 rounded-lg p-2 flex justify-between items-center hover:border-blue-500/30 transition-colors">
+                          <div key={rescuer.rescuerId} className="bg-slate-900 border border-slate-800 rounded-lg p-2 flex justify-between items-center hover:border-blue-500/30 transition-colors">
                             <div className="flex flex-col">
-                              <span className="text-xs font-bold text-slate-200">{rescuer.name}</span>
+                              <span className="text-xs font-bold text-slate-200">{rescuer.rescuerName}</span>
                               <span className="text-[10px] text-slate-500 flex items-center gap-1">
                                 <span className={`w-1.5 h-1.5 rounded-full ${rescuer.status === 'ONLINE' ? 'bg-green-500' : 'bg-orange-500'}`}></span>
-                                {rescuer.status} • {rescuer.activeAssignments} Active
+                                {rescuer.status}
                               </span>
                             </div>
                             <button 
-                              onClick={() => { onAssign(alert.id, rescuer.id); setAssignMode(null); }}
+                              onClick={() => { onAssign(alert.id, rescuer.rescuerId); setAssignMode(null); }}
                               className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-colors"
                             >
                               Dispatch
