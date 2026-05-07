@@ -7,7 +7,7 @@ const LOCATION_UPDATE_INTERVAL = 5000; // 5 seconds
  * Custom hook for real-time rescuer location tracking
  * Starts tracking when enabled and stops when disabled or component unmounts
  */
-export function useLocationTracking(rescuerId: string | null | undefined, enabled: boolean = true) {
+export function useLocationTracking(rescuerId: string | null | undefined, rescuerName: string | null | undefined, enabled: boolean = true) {
   const watchIdRef = useRef<number | null>(null);
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
   const currentLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
@@ -18,7 +18,7 @@ export function useLocationTracking(rescuerId: string | null | undefined, enable
       return;
     }
 
-    console.log(`✅ Starting location tracking for rescuer: ${rescuerId}`);
+    console.log(`✅ Starting location tracking for rescuer: ${rescuerId} (${rescuerName || 'Unknown'})`);
 
     // Step 1: Request geolocation permission and start watching position
     if (!navigator.geolocation) {
@@ -72,8 +72,10 @@ export function useLocationTracking(rescuerId: string | null | undefined, enable
           },
           body: JSON.stringify({
             rescuerId,
+            rescuerName: rescuerName || 'Unknown Rescuer',
             latitude,
             longitude,
+            status: 'ONLINE',
             timestamp: new Date().toISOString(),
           }),
         });

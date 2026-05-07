@@ -15,12 +15,18 @@ export const Dashboard: FC = () => {
   const [selectedAlert, setSelectedAlert] = useState<SOSAlert | null>(null);
 
   useEffect(() => {
-    // Fetch initial SOS alerts from backend
-    const fetchSOSAlerts = async () => {
+    // Fetch initial SOS alerts and rescuer locations from backend
+    const fetchInitialData = async () => {
       try {
-        const res = await fetch("http://localhost:5000/sos");
-        const data = await res.json();
-        const formattedAlerts: SOSAlert[] = data.map((sos: any) => ({
+        const [sosRes, rescuerRes] = await Promise.all([
+          fetch("http://localhost:5000/sos"),
+          fetch("http://localhost:5000/rescuer-locations")
+        ]);
+        
+        const sosData = await sosRes.json();
+        const rescuerData = await rescuerRes.json();
+        
+        const formattedAlerts: SOSAlert[] = sosData.map((sos: any) => ({
           id: sos.id,
           victimName: "Emergency Victim",
           message: sos.message,
@@ -31,13 +37,23 @@ export const Dashboard: FC = () => {
           severity: sos.battery <= 20 ? "CRITICAL" : sos.battery <= 50 ? "HIGH" : "MEDIUM",
           status: sos.status || "ACTIVE"
         }));
+        
+        const formattedRescuers: Rescuer[] = rescuerData.map((rescuer: any) => ({
+          rescuerId: rescuer.rescuerId,
+          rescuerName: rescuer.rescuerName,
+          latitude: rescuer.latitude,
+          longitude: rescuer.longitude,
+          status: rescuer.status || "ONLINE"
+        }));
+        
         setAlerts(formattedAlerts);
+        setRescuers(formattedRescuers);
       } catch (err) {
-        console.error("Failed to fetch SOS alerts:", err);
+        console.error("Failed to fetch initial data:", err);
       }
     };
 
-    fetchSOSAlerts();
+    fetchInitialData();
   }, []);
 
   useEffect(() => {

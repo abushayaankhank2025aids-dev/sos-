@@ -28,7 +28,7 @@ export function Dashboard() {
   const CURRENT_RESCUER_ID = user?.id || 'rescuer_1';
 
   // Start real-time location tracking when user is logged in
-  useLocationTracking(user?.id, !!user);
+  useLocationTracking(user?.id, user?.name, !!user);
 
   const handleLogout = () => {
     logout();
